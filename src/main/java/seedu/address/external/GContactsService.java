@@ -3,6 +3,7 @@ package seedu.address.external;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+import java.util.logging.Logger;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.gdata.client.contacts.ContactsService;
@@ -19,20 +20,24 @@ import com.google.gdata.data.extensions.PhoneNumber;
 import com.google.gdata.util.PreconditionFailedException;
 import com.google.gdata.util.ServiceException;
 
+import seedu.address.commons.core.LogsCenter;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.student.Student;
 
 //@@author demitycho
 /**
  * Constructs a new GContactsService object to communicate with Google's APIs
+ * The upload process is still synchronous, the UI will freeze as data is being uploaded
+ * There will be logging here to show state updates as it is difficult to show UI changes.
  */
 public class GContactsService {
     public static final String STRING_STUDENT_GROUP_NAME = "Students";
     public static final String STRING_BASE_GROUP_ATOM_ID =
             "http://www.google.com/m8/feeds/groups/codeducatorapp%40gmail.com/base/6";
 
-    private Credential credential;
+    private static final Logger logger = LogsCenter.getLogger(GContactsService.class);
 
+    private Credential credential;
     public GContactsService() {}
 
     public GContactsService(Credential credential) {
@@ -103,8 +108,9 @@ public class GContactsService {
             toBeInserted.addGroupMembershipInfo(
                     new GroupMembershipInfo(false, studentGroupEntry.getId()));
 
-            myService.insert(postUrl, toBeInserted);
+            logger.info(String.format("Contact created for: %s", student.getName()));
         }
+        logger.info("Successfully updated Google Contacts");
 
     }
 
@@ -149,6 +155,7 @@ public class GContactsService {
         URL postUrl = new URL("https://www.google.com/m8/feeds/groups/default/full");
         ContactGroupEntry createdGroup = myService.insert(postUrl, newGroup);
 
+        logger.info("Successfully created Google Contact group: Student");
         return createdGroup;
     }
 
@@ -175,6 +182,7 @@ public class GContactsService {
                 e.printStackTrace();
             }
         }
+        logger.info("Successfully deleted old contacts");
     }
 
     /**
